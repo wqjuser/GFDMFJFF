@@ -2,3 +2,17 @@
 **/*.ts
 **/*.map
 tsconfig.json
+# 不需要发布的文件
+.gitignore
+AGENTS.md
+
+# 源码（只发布编译后的）
+src/**
+
+# 测试
+test/**
+__tests__/**
+
+# 配置 / 杂项
+node_modules/**
+

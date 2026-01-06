@@ -10,6 +10,11 @@
   "categories": [
     "Other"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wqjuser/GFDMFJFF"
+  },
+  "icon": "images/icon.png",
   "activationEvents": [
     "workspaceContains:pubspec.yaml",
     "onCommand:jsonToDartFreezed.generate"
