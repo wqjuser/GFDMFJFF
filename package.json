@@ -1,0 +1,46 @@
+{
+  "name": "json-to-dart-freezed",
+  "displayName": "JsonToDart(Freezed)",
+  "description": "Generate Freezed Dart models from JSON for Flutter projects.",
+  "version": "0.1.0",
+  "publisher": "your-name",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "workspaceContains:pubspec.yaml",
+    "onCommand:jsonToDartFreezed.generate"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "jsonToDartFreezed.generate",
+        "title": "JsonToDart(Freezed)",
+        "category": "JsonToDart"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "jsonToDartFreezed.generate",
+          "when": "explorerResourceIsFolder && jsonToDartFreezed.isFlutterProject",
+          "group": "navigation@50"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -w -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.3.3"
+  }
+}
