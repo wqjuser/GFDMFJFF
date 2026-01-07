@@ -2,8 +2,8 @@
   "name": "json-to-dart-freezed",
   "displayName": "JsonToDart(Freezed)",
   "description": "Generate Freezed Dart models from JSON for Flutter projects.",
-  "version": "0.1.0",
-  "publisher": "your-name",
+  "version": "0.1.2",
+  "publisher": "wqjuser",
   "engines": {
     "vscode": "^1.85.0"
   },

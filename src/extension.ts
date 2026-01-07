@@ -96,6 +96,15 @@ const RESERVED_WORDS = new Set([
   'yield'
 ]);
 
+const DISALLOWED_CLASS_NAMES = new Set([
+  'List',
+  'Map',
+  'Set',
+  'Iterable',
+  'Object',
+  'String'
+]);
+
 const JSON_VALUE_CONVERTER_CONTENT = `import 'package:freezed_annotation/freezed_annotation.dart';
 
 class IntJsonConverter implements JsonConverter<int, Object?> {
@@ -520,8 +529,14 @@ class FreezedGenerator {
     return `${imports}\n\n${parts}\n\n${body}\n`;
   }
 
-  private createClass(nameHint: string, obj: JsonObject): string {
-    const className = this.uniqueClassName(toPascalCase(nameHint) || 'Model');
+  private createClass(
+    nameHint: string,
+    obj: JsonObject,
+    fallbackName = 'Model',
+    reservedSuffix = 'Model'
+  ): string {
+    const baseName = toPascalCase(nameHint) || fallbackName;
+    const className = this.uniqueClassName(ensureSafeClassName(baseName, reservedSuffix));
     const classDef: ClassDef = { name: className, fields: [] };
     this.classes.push(classDef);
 
@@ -573,7 +588,7 @@ class FreezedGenerator {
     }
 
     if (typeof value === 'object') {
-      return this.createClass(toPascalCase(key) || 'Nested', value as JsonObject);
+      return this.createClass(key, value as JsonObject, 'Nested', 'Model');
     }
 
     if (typeof value === 'string') {
@@ -611,8 +626,10 @@ class FreezedGenerator {
           elementType = this.inferArrayType(key, item);
         } else if (typeof item === 'object') {
           elementType = this.createClass(
-            toPascalCase(singularize(key)) || 'Item',
-            item as JsonObject
+            singularize(key),
+            item as JsonObject,
+            'Item',
+            'Item'
           );
         } else {
           elementType = this.inferType(key, item);
@@ -743,6 +760,13 @@ function uniqueFieldName(baseName: string, counts: Map<string, number>): string 
   const next = existing + 1;
   counts.set(baseName, next);
   return `${baseName}${next}`;
+}
+
+function ensureSafeClassName(name: string, suffix: string): string {
+  if (DISALLOWED_CLASS_NAMES.has(name)) {
+    return `${name}${suffix}`;
+  }
+  return name;
 }
 
 function toPascalCase(input: string): string {
