@@ -283,10 +283,11 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
 
-        const classNameInput = typeof message.className === 'string' ? message.className.trim() : '';
+        const rawClassNameInput = typeof message.className === 'string' ? message.className.trim() : '';
+        const classNameInput = ensureEntitySuffix(rawClassNameInput);
         const jsonText = typeof message.jsonText === 'string' ? message.jsonText.trim() : '';
 
-        if (!classNameInput) {
+        if (!rawClassNameInput) {
           panel.webview.postMessage({
             type: 'error',
             message: 'Class name is required.'
@@ -762,6 +763,16 @@ function uniqueFieldName(baseName: string, counts: Map<string, number>): string 
   return `${baseName}${next}`;
 }
 
+function ensureEntitySuffix(input: string): string {
+  if (!input) {
+    return input;
+  }
+  if (/_entity$/i.test(input)) {
+    return input;
+  }
+  return `${input}_entity`;
+}
+
 function ensureSafeClassName(name: string, suffix: string): string {
   if (DISALLOWED_CLASS_NAMES.has(name)) {
     return `${name}${suffix}`;
@@ -854,228 +865,520 @@ function getWebviewContent(webview: vscode.Webview): string {
   <style>
     :root {
       color-scheme: dark;
-      --text: #e8f0fa;
-      --muted: #9fb0c6;
-      --accent: #2ad3c1;
-      --accent-2: #3aa7ff;
-      --panel: rgba(7, 15, 25, 0.88);
-      --border: rgba(73, 111, 158, 0.45);
-      --input: #0c172b;
-      --input-border: #274461;
-      --input-focus: #3aa7ff;
-      --shadow: 0 20px 60px rgba(1, 6, 14, 0.65), 0 0 0 1px rgba(120, 160, 210, 0.18);
-      --ring: 0 0 0 2px rgba(58, 167, 255, 0.25);
+      --text: #f0f6ff;
+      --text-secondary: #a8c5e8;
+      --muted: #6b8bb8;
+      --accent: #00d4aa;
+      --accent-hover: #00f5c4;
+      --accent-2: #4da3ff;
+      --accent-purple: #a855f7;
+      --panel: rgba(12, 20, 35, 0.92);
+      --panel-hover: rgba(18, 28, 48, 0.95);
+      --border: rgba(100, 140, 200, 0.25);
+      --border-hover: rgba(100, 180, 255, 0.4);
+      --input: rgba(8, 15, 28, 0.9);
+      --input-border: rgba(80, 120, 180, 0.3);
+      --input-focus: #4da3ff;
+      --success: #22c55e;
+      --error: #ef4444;
+      --warning: #f59e0b;
+      --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.4);
+      --shadow-glow: 0 0 40px rgba(77, 163, 255, 0.15);
+      --ring: 0 0 0 3px rgba(77, 163, 255, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
     }
 
     body {
       margin: 0;
-      font-family: "Trebuchet MS", "Candara", "Segoe UI", sans-serif;
-      background-color: #05070e;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: #030712;
       background-image:
-        radial-gradient(1200px 480px at 10% -10%, rgba(58, 167, 255, 0.28), transparent 60%),
-        radial-gradient(900px 500px at 90% 0%, rgba(42, 211, 193, 0.22), transparent 55%),
-        linear-gradient(160deg, #05070e, #061427 55%, #050c18),
-        repeating-linear-gradient(120deg, rgba(255, 255, 255, 0.03) 0, rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 48px);
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(77, 163, 255, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(168, 85, 247, 0.1), transparent),
+        radial-gradient(ellipse 60% 40% at 0% 100%, rgba(0, 212, 170, 0.08), transparent);
       color: var(--text);
       min-height: 100vh;
+      line-height: 1.5;
     }
 
     .canvas {
       min-height: 100vh;
-      padding: 32px 24px 40px;
+      padding: 40px 24px;
       display: flex;
       justify-content: center;
       align-items: flex-start;
     }
 
     .panel {
-      width: min(980px, 100%);
-      padding: 28px 28px 22px;
-      border-radius: 18px;
+      width: min(720px, 100%);
+      padding: 0;
+      border-radius: 24px;
       background: var(--panel);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow);
+      box-shadow: var(--shadow-soft), var(--shadow-glow);
       position: relative;
       overflow: hidden;
-      backdrop-filter: blur(14px) saturate(120%);
-      animation: panel-in 320ms ease-out;
+      backdrop-filter: blur(20px) saturate(150%);
+      animation: panel-in 400ms cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .panel::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background: linear-gradient(120deg, rgba(58, 167, 255, 0.12), transparent 45%);
-      pointer-events: none;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1) 20%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 80%, transparent);
     }
 
     .header {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 16px;
+      padding: 28px 32px 24px;
+      background: linear-gradient(180deg, rgba(77, 163, 255, 0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
     }
 
-    .info-badge {
-      width: 32px;
-      height: 32px;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #2ad3c1, #3aa7ff);
-      display: inline-flex;
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: flex;
       align-items: center;
       justify-content: center;
-      color: #041523;
-      font-weight: 700;
-      box-shadow: 0 10px 20px rgba(58, 167, 255, 0.3);
+      box-shadow: 0 8px 24px rgba(0, 212, 170, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .logo::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.3), transparent 60%);
+    }
+
+    .logo svg {
+      width: 26px;
+      height: 26px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-text {
+      flex: 1;
     }
 
     .title {
-      font-size: 18px;
-      letter-spacing: 0.4px;
-      margin-bottom: 4px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--text), var(--text-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
     .subtitle {
       font-size: 13px;
       color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .version-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(77, 163, 255, 0.15);
+      border: 1px solid rgba(77, 163, 255, 0.3);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-2);
+      letter-spacing: 0.02em;
+    }
+
+    .content {
+      padding: 24px 32px 28px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+      margin-bottom: 0;
     }
 
     label {
-      display: block;
-      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
       margin-bottom: 8px;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--muted);
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+    }
+
+    label svg {
+      width: 14px;
+      height: 14px;
+      opacity: 0.7;
     }
 
     input[type="text"], textarea {
       width: 100%;
-      box-sizing: border-box;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid var(--input-border);
       background: var(--input);
       color: var(--text);
-      padding: 10px 12px;
+      padding: 12px 16px;
       font-size: 14px;
+      font-family: inherit;
       outline: none;
-      box-shadow: inset 0 0 0 1px rgba(44, 198, 255, 0.05);
-      transition: border-color 160ms ease, box-shadow 160ms ease;
+      transition: all 200ms ease;
+    }
+
+    input[type="text"]:hover, textarea:hover {
+      border-color: var(--border-hover);
     }
 
     input[type="text"]:focus, textarea:focus {
       border-color: var(--input-focus);
       box-shadow: var(--ring);
+      background: rgba(12, 20, 38, 0.95);
+    }
+
+    input[type="text"]::placeholder, textarea::placeholder {
+      color: var(--muted);
+      opacity: 0.6;
     }
 
     textarea {
-      min-height: 260px;
+      min-height: 220px;
       resize: vertical;
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+      font-size: 13px;
+      line-height: 1.6;
     }
 
-    .row {
+    .options-section {
       display: flex;
       gap: 16px;
       align-items: center;
       flex-wrap: wrap;
-      margin-top: 18px;
+      padding: 16px 0;
     }
 
-    .checkbox {
+    .toggle-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid var(--input-border);
+      cursor: pointer;
+      transition: all 200ms ease;
+      user-select: none;
+    }
+
+    .toggle-wrapper:hover {
+      background: rgba(40, 55, 80, 0.6);
+      border-color: var(--border-hover);
+    }
+
+    .toggle-wrapper.active {
+      background: rgba(0, 212, 170, 0.1);
+      border-color: rgba(0, 212, 170, 0.4);
+    }
+
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      background: rgba(100, 116, 139, 0.4);
+      border-radius: 11px;
+      transition: all 200ms ease;
+      flex-shrink: 0;
+    }
+
+    .toggle::after {
+      content: "";
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .toggle-wrapper.active .toggle {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    }
+
+    .toggle-wrapper.active .toggle::after {
+      transform: translateX(18px);
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color 200ms ease;
+    }
+
+    .toggle-wrapper.active .toggle-label {
+      color: var(--text);
+    }
+
+    input[type="checkbox"] {
+      display: none;
+    }
+
+    .defaults-card {
+      margin-top: 16px;
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--input-border);
+      animation: expand-in 300ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .defaults-header {
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 14px;
-      color: #cdd8e5;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
     }
 
-    .defaults {
+    .defaults-header svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent-2);
+    }
+
+    .defaults-header span {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .defaults-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
       gap: 12px;
-      margin-top: 12px;
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(8, 17, 31, 0.6);
-      border: 1px solid rgba(60, 90, 130, 0.25);
     }
 
-    .defaults label {
+    .default-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .default-item label {
       font-size: 11px;
       margin-bottom: 6px;
+      color: var(--muted);
     }
 
-    .actions {
+    .default-item input {
+      padding: 10px 12px;
+      font-size: 13px;
+      font-family: "SF Mono", "Fira Code", "Consolas", monospace;
+    }
+
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .type-string { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+    .type-int { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .type-double { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+    .type-bool { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .type-list { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
+
+    .error-box {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      display: none;
+      animation: shake 400ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    .error-box.show {
       display: flex;
-      justify-content: flex-end;
+      align-items: flex-start;
       gap: 12px;
-      margin-top: 18px;
+    }
+
+    .error-icon {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      color: #f87171;
+    }
+
+    .error-content {
+      flex: 1;
+    }
+
+    .error-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #fca5a5;
+      margin-bottom: 2px;
+    }
+
+    .error-message {
+      font-size: 12px;
+      color: #fca5a5;
+      opacity: 0.9;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 20px 32px;
+      background: rgba(15, 23, 42, 0.5);
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-hint {
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer-hint svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 10px;
     }
 
     button {
       border: none;
       border-radius: 10px;
-      padding: 10px 18px;
+      padding: 12px 24px;
       font-size: 13px;
       font-weight: 600;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.02em;
       cursor: pointer;
-      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+      transition: all 200ms ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    button svg {
+      width: 16px;
+      height: 16px;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #2ad3c1, #3aa7ff);
-      color: #041523;
-      box-shadow: 0 12px 24px rgba(58, 167, 255, 0.25);
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #030712;
+      box-shadow: 0 4px 16px rgba(0, 212, 170, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 212, 170, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
     }
 
     .btn-secondary {
-      background: rgba(15, 27, 46, 0.6);
+      background: rgba(51, 65, 85, 0.6);
       color: var(--text);
-      border: 1px solid rgba(133, 160, 197, 0.35);
+      border: 1px solid var(--input-border);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(71, 85, 105, 0.7);
+      border-color: var(--border-hover);
     }
 
     .btn-ghost {
       background: transparent;
       color: var(--muted);
-      border: 1px solid rgba(148, 163, 184, 0.3);
+      padding: 12px 16px;
     }
 
-    button:hover {
-      transform: translateY(-1px);
+    .btn-ghost:hover {
+      color: var(--text);
+      background: rgba(51, 65, 85, 0.4);
     }
 
-    button:active {
-      transform: translateY(0);
+    .btn-icon {
+      padding: 10px;
+      border-radius: 10px;
+      background: rgba(51, 65, 85, 0.5);
+      border: 1px solid var(--input-border);
     }
 
-    .top-actions {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 10px;
-    }
-
-    .error {
-      margin-top: 12px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      background: rgba(248, 113, 113, 0.15);
-      border: 1px solid rgba(248, 113, 113, 0.4);
-      color: #fecaca;
-      font-size: 13px;
-      display: none;
-    }
-
-    .divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.3), transparent);
-      margin: 20px 0;
+    .btn-icon:hover {
+      background: rgba(71, 85, 105, 0.6);
+      border-color: var(--border-hover);
     }
 
     @keyframes panel-in {
       from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(20px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes expand-in {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
       }
       to {
         opacity: 1;
@@ -1083,16 +1386,42 @@ function getWebviewContent(webview: vscode.Webview): string {
       }
     }
 
+    @keyframes shake {
+      10%, 90% { transform: translateX(-1px); }
+      20%, 80% { transform: translateX(2px); }
+      30%, 50%, 70% { transform: translateX(-3px); }
+      40%, 60% { transform: translateX(3px); }
+    }
+
     @media (max-width: 640px) {
-      .panel {
-        padding: 22px 18px;
+      .canvas {
+        padding: 16px;
       }
-      .actions {
+      .panel {
+        border-radius: 20px;
+      }
+      .header {
+        padding: 20px;
+      }
+      .content {
+        padding: 20px;
+      }
+      .footer {
+        flex-direction: column;
+        padding: 16px 20px;
+      }
+      .footer-actions {
+        width: 100%;
+      }
+      .footer-actions button {
+        flex: 1;
+      }
+      .options-section {
         flex-direction: column;
         align-items: stretch;
       }
-      .top-actions {
-        justify-content: stretch;
+      .toggle-wrapper {
+        justify-content: space-between;
       }
     }
   </style>
@@ -1100,97 +1429,202 @@ function getWebviewContent(webview: vscode.Webview): string {
 <body>
   <div class="canvas">
     <div class="panel">
-    <div class="header">
-      <div class="info-badge">i</div>
-      <div>
-        <div class="title">JsonToDart (Freezed)</div>
-        <div class="subtitle">Please input the class name and JSON string for generating a Freezed model</div>
+      <div class="header">
+        <div class="logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#030712" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="12" y1="18" x2="12" y2="12"/>
+            <line x1="9" y1="15" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <div class="header-text">
+          <div class="title">JsonToDart (Freezed)</div>
+          <div class="subtitle">Generate type-safe Freezed models from JSON</div>
+        </div>
+        <div class="version-badge">v0.1.2</div>
+      </div>
+
+      <div class="content">
+        <div class="form-row">
+          <div class="form-group">
+            <label>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              Class Name
+            </label>
+            <input id="className" type="text" placeholder="e.g. UserProfile, OrderItem" />
+          </div>
+          <button class="btn-icon" id="formatBtn" title="Format JSON">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 7 4 4 20 4 20 7"/>
+              <line x1="9" y1="20" x2="15" y2="20"/>
+              <line x1="12" y1="4" x2="12" y2="20"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="form-group">
+          <label>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            JSON Input
+          </label>
+          <textarea id="jsonText" placeholder='{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com",
+  "isActive": true
+}'></textarea>
+        </div>
+
+        <div class="options-section">
+          <label class="toggle-wrapper" id="nullableWrapper">
+            <input type="checkbox" id="nullableToggle" />
+            <div class="toggle"></div>
+            <span class="toggle-label">Nullable Fields</span>
+          </label>
+          <label class="toggle-wrapper" id="defaultWrapper">
+            <input type="checkbox" id="defaultToggle" />
+            <div class="toggle"></div>
+            <span class="toggle-label">Default Values</span>
+          </label>
+        </div>
+
+        <div class="defaults-card" id="defaultsSection" style="display: none;">
+          <div class="defaults-header">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 1v6m0 6v10"/>
+              <path d="M20.66 4.93l-4.24 4.24m-8.84 0L3.34 4.93"/>
+              <path d="M20.66 19.07l-4.24-4.24m-8.84 0l-4.24 4.24"/>
+            </svg>
+            <span>Configure Default Values</span>
+          </div>
+          <div class="defaults-grid">
+            <div class="default-item">
+              <label><span class="type-badge type-string">String</span></label>
+              <input id="defaultString" type="text" value="" placeholder='""' />
+            </div>
+            <div class="default-item">
+              <label><span class="type-badge type-int">int</span></label>
+              <input id="defaultInt" type="text" value="0" />
+            </div>
+            <div class="default-item">
+              <label><span class="type-badge type-double">double</span></label>
+              <input id="defaultDouble" type="text" value="0.0" />
+            </div>
+            <div class="default-item">
+              <label><span class="type-badge type-bool">bool</span></label>
+              <input id="defaultBool" type="text" value="false" />
+            </div>
+            <div class="default-item">
+              <label><span class="type-badge type-list">List</span></label>
+              <input id="defaultList" type="text" value="[]" />
+            </div>
+          </div>
+        </div>
+
+        <div id="error" class="error-box">
+          <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <div class="error-content">
+            <div class="error-title">Error</div>
+            <div class="error-message" id="errorMessage"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-hint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          Model will be generated with Freezed annotations
+        </div>
+        <div class="footer-actions">
+          <button class="btn-ghost" id="cancelBtn">Cancel</button>
+          <button class="btn-primary" id="makeBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14"/>
+              <path d="M5 12h14"/>
+            </svg>
+            Generate
+          </button>
+        </div>
       </div>
     </div>
-
-    <div>
-      <label for="className">Class Name</label>
-      <input id="className" type="text" placeholder="Example: UserProfile" />
-    </div>
-
-    <div class="top-actions">
-      <button class="btn-secondary" id="formatBtn">FORMAT</button>
-    </div>
-
-    <div style="margin-top: 12px;">
-      <label for="jsonText">JSON Text</label>
-      <textarea id="jsonText" placeholder="{\n  \"name\": \"value\"\n}"></textarea>
-    </div>
-
-    <div class="row">
-      <label class="checkbox">
-        <input type="checkbox" id="nullableToggle" />
-        nullable
-      </label>
-      <label class="checkbox">
-        <input type="checkbox" id="defaultToggle" />
-        default value
-      </label>
-    </div>
-
-    <div class="defaults" id="defaultsSection">
-      <div>
-        <label for="defaultString">String</label>
-        <input id="defaultString" type="text" value="" />
-      </div>
-      <div>
-        <label for="defaultInt">int</label>
-        <input id="defaultInt" type="text" value="0" />
-      </div>
-      <div>
-        <label for="defaultDouble">double</label>
-        <input id="defaultDouble" type="text" value="0.0" />
-      </div>
-      <div>
-        <label for="defaultBool">bool</label>
-        <input id="defaultBool" type="text" value="false" />
-      </div>
-      <div>
-        <label for="defaultList">List</label>
-        <input id="defaultList" type="text" value="[]" />
-      </div>
-    </div>
-
-    <div id="error" class="error"></div>
-
-    <div class="divider"></div>
-
-    <div class="actions">
-      <button class="btn-primary" id="makeBtn">MAKE</button>
-      <button class="btn-ghost" id="cancelBtn">CANCEL</button>
-    </div>
-  </div>
   </div>
 
   <script nonce="${nonce}">
     const vscode = acquireVsCodeApi();
     const errorBox = document.getElementById('error');
+    const errorMessage = document.getElementById('errorMessage');
     const nullableToggle = document.getElementById('nullableToggle');
+    const nullableWrapper = document.getElementById('nullableWrapper');
     const defaultToggle = document.getElementById('defaultToggle');
+    const defaultWrapper = document.getElementById('defaultWrapper');
     const defaultsSection = document.getElementById('defaultsSection');
 
     function setError(message) {
       if (message) {
-        errorBox.textContent = message;
-        errorBox.style.display = 'block';
+        errorMessage.textContent = message;
+        errorBox.classList.add('show');
       } else {
-        errorBox.textContent = '';
-        errorBox.style.display = 'none';
+        errorMessage.textContent = '';
+        errorBox.classList.remove('show');
+      }
+    }
+
+    function updateToggleUI(checkbox, wrapper) {
+      if (checkbox.checked) {
+        wrapper.classList.add('active');
+      } else {
+        wrapper.classList.remove('active');
       }
     }
 
     function updateDefaultsState() {
-      const disabled = !defaultToggle.checked;
+      const enabled = defaultToggle.checked;
+      defaultsSection.style.display = enabled ? 'block' : 'none';
       defaultsSection.querySelectorAll('input').forEach((input) => {
-        input.disabled = disabled;
-        input.style.opacity = disabled ? '0.5' : '1';
+        input.disabled = !enabled;
       });
     }
+
+    // Toggle click handlers
+    nullableWrapper.addEventListener('click', (e) => {
+      if (e.target === nullableToggle) return;
+      nullableToggle.checked = !nullableToggle.checked;
+      updateToggleUI(nullableToggle, nullableWrapper);
+    });
+
+    nullableToggle.addEventListener('change', () => {
+      updateToggleUI(nullableToggle, nullableWrapper);
+    });
+
+    defaultWrapper.addEventListener('click', (e) => {
+      if (e.target === defaultToggle) return;
+      defaultToggle.checked = !defaultToggle.checked;
+      updateToggleUI(defaultToggle, defaultWrapper);
+      updateDefaultsState();
+    });
+
+    defaultToggle.addEventListener('change', () => {
+      updateToggleUI(defaultToggle, defaultWrapper);
+      updateDefaultsState();
+    });
 
     document.getElementById('formatBtn').addEventListener('click', () => {
       const jsonText = document.getElementById('jsonText');
@@ -1199,7 +1633,7 @@ function getWebviewContent(webview: vscode.Webview): string {
         jsonText.value = JSON.stringify(parsed, null, 2);
         setError('');
       } catch (error) {
-        setError('Invalid JSON: ' + error.message);
+        setError(error.message);
       }
     });
 
@@ -1227,7 +1661,9 @@ function getWebviewContent(webview: vscode.Webview): string {
       vscode.postMessage({ type: 'cancel' });
     });
 
-    defaultToggle.addEventListener('change', updateDefaultsState);
+    // Initialize states
+    updateToggleUI(nullableToggle, nullableWrapper);
+    updateToggleUI(defaultToggle, defaultWrapper);
     updateDefaultsState();
 
     window.addEventListener('message', (event) => {
