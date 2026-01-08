@@ -1,6 +1,7 @@
 # JsonToDart(Freezed)
 
 Generate Freezed Dart models from JSON in Flutter projects.
+Available on the VS Code Marketplace.
 
 ## Usage
 
@@ -21,15 +22,15 @@ The extension creates a `.dart` file in the selected folder with Freezed models.
 ### Commands
 
 ```bash
-# 安装依赖
+# Install dependencies
 npm install
 
-# 编译 TypeScript
+# Compile TypeScript
 npm run compile
 
-# 开发模式（监听文件变化自动编译）
+# Watch mode (rebuild on changes)
 npm run watch
 
-# 打包 VSIX 扩展
+# Package the VSIX extension
 npx @vscode/vsce package
 ```

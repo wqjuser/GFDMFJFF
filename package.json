@@ -2,7 +2,7 @@
   "name": "json-to-dart-freezed",
   "displayName": "JsonToDart(Freezed)",
   "description": "Generate Freezed Dart models from JSON for Flutter projects.",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "publisher": "wqjuser",
   "engines": {
     "vscode": "^1.85.0"
@@ -16,8 +16,7 @@
   },
   "icon": "images/icon.png",
   "activationEvents": [
-    "workspaceContains:pubspec.yaml",
-    "onCommand:jsonToDartFreezed.generate"
+    "workspaceContains:pubspec.yaml"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -25,6 +24,16 @@
       {
         "command": "jsonToDartFreezed.generate",
         "title": "JsonToDart(Freezed)",
+        "category": "JsonToDart"
+      },
+      {
+        "command": "jsonToDartFreezed.regenerate",
+        "title": "Regenerate Model (JSON)",
+        "category": "JsonToDart"
+      },
+      {
+        "command": "jsonToDartFreezed.rebuildOutputs",
+        "title": "Regenerate Freezed Outputs",
         "category": "JsonToDart"
       }
     ],
@@ -34,6 +43,16 @@
           "command": "jsonToDartFreezed.generate",
           "when": "explorerResourceIsFolder && jsonToDartFreezed.isFlutterProject",
           "group": "navigation@50"
+        },
+        {
+          "command": "jsonToDartFreezed.regenerate",
+          "when": "resourceExtname == .dart && jsonToDartFreezed.isFlutterProject",
+          "group": "navigation@51"
+        },
+        {
+          "command": "jsonToDartFreezed.rebuildOutputs",
+          "when": "resourceExtname == .dart && jsonToDartFreezed.isFlutterProject",
+          "group": "navigation@52"
         }
       ]
     }

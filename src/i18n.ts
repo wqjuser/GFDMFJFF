@@ -7,7 +7,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: 'Generate type-safe Freezed models from JSON',
     className: 'Class Name',
-    classNamePlaceholder: 'e.g. UserProfile, OrderItem',
+    classNamePlaceholder: 'e.g. user_profile, order_item',
     jsonInput: 'JSON Input',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -43,7 +43,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: '从 JSON 生成类型安全的 Freezed 模型',
     className: '类名',
-    classNamePlaceholder: '例如: UserProfile, OrderItem',
+    classNamePlaceholder: '例如: user_profile, order_item',
     jsonInput: 'JSON 输入',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -79,7 +79,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: '從 JSON 生成類型安全的 Freezed 模型',
     className: '類名',
-    classNamePlaceholder: '例如: UserProfile, OrderItem',
+    classNamePlaceholder: '例如: user_profile, order_item',
     jsonInput: 'JSON 輸入',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -115,7 +115,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: 'JSONから型安全なFreezedモデルを生成',
     className: 'クラス名',
-    classNamePlaceholder: '例: UserProfile, OrderItem',
+    classNamePlaceholder: '例: user_profile, order_item',
     jsonInput: 'JSON入力',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -151,7 +151,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: 'JSON에서 타입 안전한 Freezed 모델 생성',
     className: '클래스 이름',
-    classNamePlaceholder: '예: UserProfile, OrderItem',
+    classNamePlaceholder: '예: user_profile, order_item',
     jsonInput: 'JSON 입력',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -187,7 +187,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: 'Générer des modèles Freezed typés depuis JSON',
     className: 'Nom de classe',
-    classNamePlaceholder: 'ex: UserProfile, OrderItem',
+    classNamePlaceholder: 'ex: user_profile, order_item',
     jsonInput: 'Entrée JSON',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -223,7 +223,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: 'Typsichere Freezed-Modelle aus JSON generieren',
     className: 'Klassenname',
-    classNamePlaceholder: 'z.B. UserProfile, OrderItem',
+    classNamePlaceholder: 'z.B. user_profile, order_item',
     jsonInput: 'JSON-Eingabe',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -259,7 +259,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: 'Generar modelos Freezed con tipos seguros desde JSON',
     className: 'Nombre de clase',
-    classNamePlaceholder: 'ej: UserProfile, OrderItem',
+    classNamePlaceholder: 'ej: user_profile, order_item',
     jsonInput: 'Entrada JSON',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -295,7 +295,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: 'Gerar modelos Freezed tipados a partir de JSON',
     className: 'Nome da classe',
-    classNamePlaceholder: 'ex: UserProfile, OrderItem',
+    classNamePlaceholder: 'ex: user_profile, order_item',
     jsonInput: 'Entrada JSON',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -331,7 +331,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: 'Генерация типобезопасных моделей Freezed из JSON',
     className: 'Имя класса',
-    classNamePlaceholder: 'напр: UserProfile, OrderItem',
+    classNamePlaceholder: 'напр: user_profile, order_item',
     jsonInput: 'Ввод JSON',
     jsonInputPlaceholder: `{
   "id": 1,
@@ -367,7 +367,7 @@ export const i18n: Record<string, I18nTexts> = {
     title: 'JsonToDart (Freezed)',
     subtitle: 'Genera modelli Freezed tipizzati da JSON',
     className: 'Nome classe',
-    classNamePlaceholder: 'es: UserProfile, OrderItem',
+    classNamePlaceholder: 'es: user_profile, order_item',
     jsonInput: 'Input JSON',
     jsonInputPlaceholder: `{
   "id": 1,

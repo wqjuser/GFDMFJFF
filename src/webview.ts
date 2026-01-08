@@ -2,12 +2,17 @@ import * as vscode from 'vscode';
 import { getNonce } from './utils';
 import { i18n, languageNames, getLocale } from './i18n';
 
-export function getWebviewContent(webview: vscode.Webview, version: string): string {
+export function getWebviewContent(
+  webview: vscode.Webview,
+  version: string,
+  initialState: { className?: string } = {}
+): string {
   const nonce = getNonce();
   const locale = getLocale();
   const t = i18n[locale] || i18n.en;
   const i18nJson = JSON.stringify(i18n);
   const langNamesJson = JSON.stringify(languageNames);
+  const initialStateJson = JSON.stringify(initialState);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -27,7 +32,7 @@ export function getWebviewContent(webview: vscode.Webview, version: string): str
   ${getFieldConfigModal(t)}
 
   <script nonce="${nonce}">
-    ${getScript(i18nJson, langNamesJson, locale)}
+    ${getScript(i18nJson, langNamesJson, locale, initialStateJson)}
   </script>
 </body>
 </html>`;
@@ -1336,12 +1341,18 @@ function getFieldConfigModal(t: any): string {
   </div>`;
 }
 
-function getScript(i18nJson: string, langNamesJson: string, locale: string): string {
+function getScript(
+  i18nJson: string,
+  langNamesJson: string,
+  locale: string,
+  initialStateJson: string
+): string {
   return `
     const vscode = acquireVsCodeApi();
     const i18nData = ${i18nJson};
     const langNames = ${langNamesJson};
     let currentLang = '${locale}';
+    const initialState = ${initialStateJson};
 
     const errorBox = document.getElementById('error');
     const errorMessage = document.getElementById('errorMessage');
@@ -1442,9 +1453,14 @@ function getScript(i18nJson: string, langNamesJson: string, locale: string): str
     const fieldConfigEmpty = document.getElementById('fieldConfigEmpty');
     const fieldCount = document.getElementById('fieldCount');
     const jsonTextArea = document.getElementById('jsonText');
+    const classNameInput = document.getElementById('className');
     let fieldConfigs = [];
     let treeData = [];
     let isPanelOpen = false;
+
+    if (initialState && typeof initialState.className === 'string') {
+      classNameInput.value = initialState.className;
+    }
 
     function openFieldConfigModal() {
       isPanelOpen = true;
